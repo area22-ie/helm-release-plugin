@@ -14,7 +14,6 @@ function main() {
 		['pull']="pull_chart_from_release"
 		['upgrade']="upgrade_release"
 		['ttl']="release_ttl"
-		['service-account']="default"
 	)
 
 	local commands="${!command_table[@]}"

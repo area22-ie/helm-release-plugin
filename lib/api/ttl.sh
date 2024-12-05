@@ -45,7 +45,6 @@ function create_ttl() {
 		printf '%s\n' 'Release TTL was set in past. TTL must be a future time.'
 		exit_with_help "$help_text"
 	fi
-
 	manifest="
         apiVersion: batch/v1
         kind: CronJob
@@ -58,7 +57,8 @@ function create_ttl() {
             spec:
               template:
                 spec:
-				  serviceAccountName: $SERVICE_ACCOUNT
+                  serviceAccountName: $SERVICE_ACCOUNT
+				  automountServiceAccountToken: true
                   initContainers:
                     - name: release-ttl-terminator
                       image: alpine/helm
@@ -70,6 +70,7 @@ function create_ttl() {
                       imagePullPolicy: IfNotPresent
                       args: [ 'delete', 'cronjob', '$cronjob_name' ]
                   restartPolicy: OnFailure"
+	echo "$manifest"
 	echo "$manifest" | kubectl apply --filename=- --namespace=$HELM_NAMESPACE --context=$HELM_KUBECONTEXT
 }
 
