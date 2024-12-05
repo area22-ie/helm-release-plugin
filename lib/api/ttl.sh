@@ -184,7 +184,6 @@ function release_ttl() {
 				SERVICE_ACCOUNT=`echo $1 | sed -e 's/^[^=]*=//g'`
 				shift
 				;;
-			(
 			*)
 				printf '%s\n' "Unknown argument $1. Exiting..."
 				exit_with_help "$help_text"
