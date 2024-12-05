@@ -5,7 +5,7 @@ Sets release TTL. Under the hood creates Kubernetes CronJob that will delete spe
 Usage:
 	helm release ttl <RELEASE NAME> --set <TIME DELTA> - sets release TTL. Time delta processed by 'date' CLI utility.
 		So you can use any time delta definition that supports 'data' utility. Examples:
-		helm release ttl redis --set='tomorrow'
+		helm release ttl redis --set='tomorrow' --service-account=<service-account>
 		helm release ttl redis --set='2 days'
 		helm release ttl redis --set='next monday'
 		For detailed description please reference to 'date' CLI utility documentation:
@@ -13,7 +13,6 @@ Usage:
 
 		You can pass namespace or/and context. For instance:
 		helm release ttl redis --namespace=release-namespace --kube-context=not-default-context --set='1 hour'
-
 
 	helm release ttl <RELEASE NAME> [ -o --output [ text | yaml | json ] ] - returns Kubernetes CronJob description.
 		Examples:
@@ -36,6 +35,7 @@ Usage:
 function create_ttl() {
 	RELEASE=$1
 	TIME_DELTA=$2
+	SERVICE_ACCOUNT=$3
 	cronjob_name="$RELEASE-ttl"
 	now=$(date --utc "+%s")
 	scheduled_time=$(date --utc --date="$TIME_DELTA" "+%s")
@@ -63,6 +63,7 @@ function create_ttl() {
                       image: alpine/helm
                       imagePullPolicy: IfNotPresent
                       args: [ 'uninstall', '$RELEASE' ]
+					  serviceAccountName: $SERVICE_ACCOUNT
                   containers:
                     - name: release-ttl-cleaner
                       image: bitnami/kubectl
@@ -170,6 +171,20 @@ function release_ttl() {
 			(--help)
 				exit_with_help "$help_text"
 				;;
+			(--service-accout)
+				shift
+				if test $# -gt 0; then
+					SERVICE_ACCOUNT=$1
+				else
+					exit_with_help "$help_text"
+				fi
+				shift
+				;;
+			(--service-account*)
+				SERVICE_ACCOUNT=`echo $1 | sed -e 's/^[^=]*=//g'`
+				shift
+				;;
+			(
 			*)
 				printf '%s\n' "Unknown argument $1. Exiting..."
 				exit_with_help "$help_text"
@@ -179,7 +194,7 @@ function release_ttl() {
 
 	case "$ACTION" in
 		(set)
-			create_ttl $RELEASE "$SET_DATE"
+			create_ttl $RELEASE "$SET_DATE" "${SERVICE_ACCOUNT:-default}"
 			;;
 		(read)
 			read_ttl $RELEASE
