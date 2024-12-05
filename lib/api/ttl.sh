@@ -58,7 +58,7 @@ function create_ttl() {
               template:
                 spec:
                   serviceAccountName: $SERVICE_ACCOUNT
-				  automountServiceAccountToken: true
+                  automountServiceAccountToken: true
                   initContainers:
                     - name: release-ttl-terminator
                       image: alpine/helm
