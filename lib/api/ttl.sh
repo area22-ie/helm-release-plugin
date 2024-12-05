@@ -58,12 +58,12 @@ function create_ttl() {
             spec:
               template:
                 spec:
+				  serviceAccountName: $SERVICE_ACCOUNT
                   initContainers:
                     - name: release-ttl-terminator
                       image: alpine/helm
                       imagePullPolicy: IfNotPresent
                       args: [ 'uninstall', '$RELEASE' ]
-					  serviceAccountName: $SERVICE_ACCOUNT
                   containers:
                     - name: release-ttl-cleaner
                       image: bitnami/kubectl
